@@ -1,0 +1,164 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // --------------------------------
+    // Helper Functions
+    // --------------------------------
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return exists(/databases/$(database)/documents/hospital_administrators/$(request.auth.uid));
+    }
+
+    function isFirstResponder() {
+      return exists(/databases/$(database)/documents/first_responders/$(request.auth.uid));
+    }
+
+    function docExists() {
+      return resource != null;
+    }
+
+    function isAssignedStaff() {
+      return isSignedIn() && request.auth.uid in resource.data.staff_members;
+    }
+
+    function isAssignedResponder() {
+      return isSignedIn() && request.auth.uid in resource.data.firstResponderIds;
+    }
+
+    // --------------------------------
+    // SYSTEM BOOTSTRAP CONTROL (FINAL FIX)
+    // --------------------------------
+
+    match /system/bootstrap {
+
+      // Allow read by anyone (needed before auth during first signup)
+      allow read: if true;
+
+      // First-time creation allowed only if document does not exist
+      allow create: if !exists(/databases/$(database)/documents/system/bootstrap);
+
+      // After bootstrap exists, only admins can update
+      allow update: if isAdmin();
+
+      allow delete: if false;
+    }
+
+    // --------------------------------
+    // 🔐 BOOTSTRAP IAM USER RECORD
+    // --------------------------------
+
+    match /users/{userId} {
+      allow create: if isSignedIn() && request.auth.uid == userId;
+      allow get: if isSignedIn() && request.auth.uid == userId;
+      allow update, delete, list: if false;
+    }
+
+    // --------------------------------
+    // PATIENT RECORDS
+    // --------------------------------
+
+    match /patients/{patientId} {
+
+      allow create: if isSignedIn() && request.auth.uid == patientId;
+
+      allow get: if isOwner(patientId) || isAdmin() || isAssignedStaff();
+      allow list: if isAdmin();
+
+      allow update: if docExists() &&
+        (isOwner(patientId) || isAdmin() || isAssignedStaff());
+
+      allow delete: if docExists() &&
+        (isOwner(patientId) || isAdmin());
+    }
+
+    // --------------------------------
+    // HOSPITAL ADMINISTRATORS
+    // --------------------------------
+
+    match /hospital_administrators/{adminId} {
+
+      allow create: if
+        isOwner(adminId) &&
+        !exists(/databases/$(database)/documents/system/bootstrap);
+
+      allow get, list: if isAdmin();
+
+      allow update, delete: if docExists() && isOwner(adminId);
+    }
+
+    // --------------------------------
+    // HOSPITAL STAFF
+    // --------------------------------
+
+    match /hospital_staff/{staffId} {
+
+      allow create: if isAdmin();
+      allow get, list: if isSignedIn();
+
+      allow update: if docExists() &&
+        (isOwner(staffId) || isAdmin());
+
+      allow delete: if docExists() && isAdmin();
+    }
+
+    // --------------------------------
+    // FIRST RESPONDERS
+    // --------------------------------
+
+    match /first_responders/{responderId} {
+
+      allow create: if isAdmin();
+      allow get, list: if isSignedIn();
+
+      allow update: if docExists() &&
+        (isOwner(responderId) || isAdmin());
+
+      allow delete: if docExists() && isAdmin();
+    }
+
+    // --------------------------------
+    // EMERGENCY EVENTS
+    // --------------------------------
+
+    match /emergency_events/{eventId} {
+
+      allow create: if isAdmin() ||
+        isOwner(request.resource.data.patientId);
+
+      allow get: if isAdmin() ||
+        isOwner(resource.data.patientId) ||
+        isAssignedResponder();
+
+      allow list: if isAdmin();
+
+      allow update: if docExists() &&
+        (isAdmin() ||
+         isOwner(resource.data.patientId) ||
+         isAssignedResponder());
+
+      allow delete: if docExists() &&
+        (isAdmin() ||
+         isOwner(resource.data.patientId));
+    }
+
+    // --------------------------------
+    // ANONYMIZED PATIENT SUMMARIES
+    // --------------------------------
+
+    match /anonymous_patient_summaries/{summaryId} {
+
+      allow get, list: if isFirstResponder() || isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+  }
+}

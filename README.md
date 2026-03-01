@@ -1,23 +1,23 @@
-# SETU – Smart Emergency Triage & Unified Coordination System  
+# 🚑 SETU – Smart Emergency Triage & Unified Coordination System  
 **Version: v1.1 – IAM Foundation Complete**
 
 ---
 
-## 🚑 Overview
+## 📌 Overview
 
-**SETU (Smart Emergency Triage & Unified Coordination System)** is a software-driven emergency coordination platform designed to:
+**SETU (Smart Emergency Triage & Unified Coordination System)** is a secure, software-driven emergency coordination platform designed to:
 
-- Identify patients quickly
-- Transfer patient data from ambulance → hospital
-- Prepare hospital systems before patient arrival
-- Enforce strict role-based access control (IAM)
-- Operate in a simulation-first architecture (no hardware dependency)
+- Rapidly identify patients  
+- Transfer critical patient data from ambulance → hospital  
+- Prepare hospitals prior to patient arrival  
+- Enforce strict role-based Identity & Access Management (IAM)  
+- Operate in a simulation-first architecture (no hardware dependency)  
 
-This version implements a secure, enterprise-grade Identity and Access Management (IAM) foundation.
+This version establishes a secure, enterprise-grade IAM foundation forming the backbone of the system.
 
 ---
 
-## 🏗️ Tech Stack
+## 🏗️ Technology Stack
 
 ### Frontend
 - Next.js (App Router)
@@ -28,231 +28,224 @@ This version implements a secure, enterprise-grade Identity and Access Managemen
 ### Backend
 - Firebase Authentication (Email/Password)
 - Cloud Firestore
-- Strict Firestore Security Rules (Role-based)
+- Firebase Admin SDK (Server-side privileged operations)
+- Strict Firestore Security Rules (Role-based enforcement)
 
 ---
 
 ## 🔐 IAM Architecture (Phase 2 Complete)
 
-### Roles in the System
+SETU follows a **zero-trust, default-deny security model**.
 
-| Role              | Signup | Created By | Dashboard Access | Permissions |
-|-------------------|--------|------------|------------------|-------------|
-| Patient           | ✅ Yes | Self       | `/dashboard/patient` | View own data |
-| Administrator     | ✅ One-time bootstrap | Self (first only) | `/dashboard/admin` | Create staff & responders |
-| Hospital Staff    | ❌ No  | Admin      | `/dashboard/hospital_staff` | Access assigned patients |
-| First Responder   | ❌ No  | Admin      | `/dashboard/first_responder` | Emergency case access |
+### 👥 Roles
+
+| Role | Signup | Created By | Dashboard | Capabilities |
+|------|--------|------------|------------|--------------|
+| **Patient** | ✅ Self | Self | `/dashboard/patient` | Access own profile & events |
+| **Administrator** | ✅ One-time | Bootstrap (first only) | `/dashboard/admin` | Create staff & responders |
+| **Hospital Staff** | ❌ No | Admin | `/dashboard/hospital_staff` | Access assigned cases |
+| **First Responder** | ❌ No | Admin | `/dashboard/first_responder` | Manage emergency cases |
 
 ---
 
 ## 🔒 Security Model
 
-### 1. Authentication
-- Firebase Email/Password authentication
-- Real login enforcement
-- No client-side bypass possible
+### 1️⃣ Authentication
+- Firebase Email/Password authentication  
+- Real login enforcement  
+- No client-side bypass  
+- ID token verification on secure API routes  
 
-### 2. Authorization
-- Role determined by Firestore collection membership
-- `/users/{uid}` is informational only
-- Power granted strictly by role collections:
-  - `/hospital_administrators`
-  - `/hospital_staff`
-  - `/first_responders`
-  - `/patients`
+### 2️⃣ Authorization
+Role is determined strictly by collection membership.
 
-### 3. Firestore Security Rules
-- Default deny model
-- Strict owner validation
-- Admin-only creation for staff/responders
-- Bootstrap lock for first admin
+Power is granted by existence in:
+
+    /hospital_administrators/{uid}
+    /hospital_staff/{uid}
+    /first_responders/{uid}
+    /patients/{uid}
+
+The `/users/{uid}` document is informational only.
+
+### 3️⃣ Firestore Rules
+- Default deny model  
+- Owner-based validation  
+- Admin-only creation for staff/responders  
+- Bootstrap lock for first admin  
+- Strict server-side enforcement  
 
 ---
 
 ## 🗂️ Firestore Structure
 
-```
-users/{uid}
-patients/{uid}
-hospital_administrators/{uid}
-hospital_staff/{uid}
-first_responders/{uid}
-emergency_events/{eventId}
-anonymous_patient_summaries/{id}
-system/bootstrap
-```
+    users/{uid}
+    patients/{uid}
+    hospital_administrators/{uid}
+    hospital_staff/{uid}
+    first_responders/{uid}
+    emergency_events/{eventId}
+    anonymous_patient_summaries/{id}
+    system/bootstrap
 
 ---
 
-## 🔐 Admin Bootstrap System
+## 🔐 Admin Bootstrap Logic
 
-- First admin is created using a secure bootstrap key
-- `/system/bootstrap` locks admin creation permanently
-- Only one root administrator allowed
+- First administrator created using a secure bootstrap key  
+- `/system/bootstrap` document permanently locks further admin creation  
+- Ensures controlled root privilege  
 
 ---
 
-## 🖥️ Route Protection
+## 🛡️ Route Protection
 
 All dashboards are protected via:
 
-- AuthContext
-- Role validation
-- Automatic redirect if unauthorized
-- Backend rule enforcement
+- AuthContext  
+- Role validation  
+- Automatic redirect if unauthorized  
+- Backend verification for privileged operations  
 
 Protected routes:
 
-```
-/dashboard/admin
-/dashboard/patient
-/dashboard/hospital_staff
-/dashboard/first_responder
-```
+    /dashboard/admin
+    /dashboard/patient
+    /dashboard/hospital_staff
+    /dashboard/first_responder
 
-Unauthorized access results in redirect.
+Unauthorized users are redirected automatically.
 
 ---
 
-## 🚀 Current System Capabilities
+## 🚀 Current Capabilities
 
-### ✅ Completed
-- Firebase integration
-- IAM bootstrap logic
-- Patient self-signup
-- Admin one-time bootstrap
-- Real login system
-- Role-based redirect
-- Dashboard protection
-- Firestore backend enforcement
-- Secure route structure
+### ✅ Implemented
 
-### ❌ Not Yet Implemented
-- Admin user creation UI (hospital staff / responders)
-- Real emergency event workflow
-- Assignment system
-- Case lifecycle management
-- Real-time coordination logic
+- Firebase Auth integration  
+- Firestore role enforcement  
+- Secure patient self-registration  
+- One-time admin bootstrap  
+- Real login system  
+- Role-based redirect logic  
+- Dashboard protection  
+- Server-side admin user creation API  
+- Environment-based Admin SDK configuration  
+- Git-secured project setup  
 
----
+### ⏳ In Progress / Planned
 
-## 📦 Local Setup
-
-### 1. Install Dependencies
-
-```bash
-npm install
-```
-
-### 2. Run Development Server
-
-```bash
-npm run dev
-```
-
-Server runs on:
-
-```
-http://localhost:9002
-```
+- Admin UI for creating hospital staff & responders  
+- Real emergency event lifecycle  
+- Case assignment workflow  
+- Real-time coordination  
+- Analytics dashboards  
 
 ---
 
-## 🔧 Environment Requirements
+## 🖥️ Local Setup
 
-You must configure:
+### 1️⃣ Clone Repository
 
-- Firebase project
-- Firestore enabled
-- Authentication enabled (Email/Password)
-- Firestore security rules deployed
+    git clone https://github.com/Kkj1203/SETU-Phase2.git
+    cd SETU-Phase2
 
-Add your Firebase config inside:
+### 2️⃣ Install Dependencies
 
-```
-src/firebase/config.ts
-```
+    npm install
+
+### 3️⃣ Configure Environment
+
+Create a `.env.local` file in the root:
+
+    FIREBASE_PROJECT_ID=
+    FIREBASE_CLIENT_EMAIL=
+    FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+
+Enable in Firebase Console:
+- Authentication → Email/Password  
+- Firestore Database  
+
+### 4️⃣ Run Development Server
+
+    npm run dev
+
+Default:
+
+    http://localhost:9002
 
 ---
 
 ## 📁 Project Structure
 
-```
-src/
- ├── app/
- │    ├── dashboard/
- │    │    ├── admin/
- │    │    ├── patient/
- │    │    ├── hospital_staff/
- │    │    └── first_responder/
- │    ├── login/[role]/
- │    └── signup/[role]/
- ├── context/
- │    └── AuthContext.tsx
- ├── firebase/
- ├── components/
- └── lib/
-```
-
----
-
-## 🔮 Roadmap (Next Phases)
-
-### Phase 3 – Role Lifecycle Management
-- Admin creates hospital staff
-- Admin creates first responders
-- User assignment system
-
-### Phase 4 – Emergency Event Flow
-- Patient creates emergency event
-- Responder assigned
-- Hospital assigned
-- Case lifecycle updates
-
-### Phase 5 – Real-Time Coordination
-- Live status tracking
-- Assignment denormalization
-- Dashboard analytics
+    src/
+     ├── app/
+     │    ├── api/admin/create-user/
+     │    ├── dashboard/
+     │    │    ├── admin/
+     │    │    ├── patient/
+     │    │    ├── hospital_staff/
+     │    │    └── first_responder/
+     │    ├── login/[role]/
+     │    └── signup/[role]/
+     ├── context/
+     │    └── AuthContext.tsx
+     ├── firebase/
+     │    ├── config.ts
+     │    └── admin.ts
+     ├── components/
+     └── lib/
 
 ---
 
 ## 🧠 Design Principles
 
-- Security-first architecture
-- Default deny backend model
-- Clean role isolation
-- Scalable structure
-- Production-aligned IAM patterns
+- Security-first architecture  
+- Default-deny backend model  
+- Clear separation of identity and capability  
+- Minimal trust on frontend  
+- Enterprise-aligned IAM patterns  
+- Scalable role isolation  
+
+---
+
+## 🔮 Roadmap
+
+### Phase 3 – Role Lifecycle Management
+- Admin creates hospital staff  
+- Admin creates responders  
+- Assignment mapping  
+
+### Phase 4 – Emergency Event Flow
+- Event creation  
+- Role-based assignment  
+- Status lifecycle tracking  
+
+### Phase 5 – Real-Time Coordination
+- Live updates  
+- Alert synchronization  
+- Dashboard analytics  
 
 ---
 
 ## 👨‍💻 Development Status
 
-**IAM Foundation: Complete**  
-**System Operational Layer: In Progress**
+IAM Foundation: Complete  
+System Operational Layer: In Development  
 
 ---
 
-## 📌 Repository
+## ⚠️ Disclaimer
 
-Forked and maintained under:
+SETU is an academic simulation system demonstrating:
 
-```
-kkj1203/SETU
-```
+- Secure IAM architecture  
+- Role-based backend enforcement  
+- Emergency workflow modeling  
 
----
-
-## 🛡️ Disclaimer
-
-This is a simulation-focused academic system designed to demonstrate:
-
-- Secure IAM implementation
-- Role-based architecture
-- Emergency coordination modeling
-
-Not intended for real-world medical deployment.
+Not intended for production medical deployment.
 
 ---
 
-**SETU v1.1 – IAM Secure Foundation Complete**
+# SETU v1.1  
+## Secure IAM Foundation Complete
